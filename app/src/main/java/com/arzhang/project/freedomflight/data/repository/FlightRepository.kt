@@ -14,6 +14,7 @@ interface FlightRepository {
     suspend fun insertFlights(flights: List<Flight>)
     suspend fun insertFav(flight: UserFavoriteFlight)
     fun getFavFights() : Flow<List<FlightDetails>>
+    suspend fun deleteFav(flight: UserFavoriteFlight)
 }
 
 class OfflineFlightRepository(
@@ -30,6 +31,7 @@ class OfflineFlightRepository(
     override suspend fun insertFav(flight: UserFavoriteFlight) = flightDao.insertFav(flight)
 
     override fun getFavFights(): Flow<List<FlightDetails>> = flightDao.getFavFights()
+    override suspend fun deleteFav(flight: UserFavoriteFlight) = flightDao.deleteFav(flight)
 
 
 }

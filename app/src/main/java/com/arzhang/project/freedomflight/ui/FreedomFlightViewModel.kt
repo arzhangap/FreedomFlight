@@ -1,5 +1,7 @@
 package com.arzhang.project.freedomflight.ui
 
+import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -24,13 +26,14 @@ data class FlightDetails(
     val departureCode: String,
     val departureName: String,
     val destinationCode: String,
-    val destinationName: String,
+    val destinationName: String
 )
 
 data class FlightUiState(
     val flightList: Flow<List<FlightDetails>> = emptyFlow(),
     val searchSuggestions: Flow<List<Airport>> = emptyFlow(),
-    var query: String = ""
+    var query: String = "",
+    val isFav: Boolean = false
 )
 
 class FreedomFlightViewModel(
@@ -48,15 +51,19 @@ class FreedomFlightViewModel(
         viewModelScope.launch {
             val userEntry = userEntryRepository.userEntry.first()
            if(departureCode == null) {
+               val fav:Boolean
                val currentList = if (userEntry.isBlank()) {
+                   fav = true
                    flightRepository.getFavFights()
                } else {
+                   fav = false
                    flightRepository.getFlights(userEntry)
                }
                    _uiState.update {
                        it.copy(
                            flightList = currentList,
-                           query = userEntry
+                           query = userEntry,
+                           isFav = fav
                        )
                    }
            }else {
@@ -65,7 +72,8 @@ class FreedomFlightViewModel(
                _uiState.update {
                    it.copy(
                        flightList = flightList,
-                       query = departureCode
+                       query = departureCode,
+                       isFav = false
                    )
                }
            }
@@ -88,10 +96,20 @@ class FreedomFlightViewModel(
         }
     }
 
-     fun addFav(flightDetails: FlightDetails) {
+     fun addFav(flightDetails: FlightDetails,context: Context) {
          viewModelScope.launch {
-             val flight = UserFavoriteFlight(flightDetails.id,flightDetails.departureCode,flightDetails.destinationCode)
-             flightRepository.insertFav(flight)
+                 val flight = UserFavoriteFlight(
+                     flightDetails.id,
+                     flightDetails.departureCode,
+                     flightDetails.destinationCode
+                 )
+             if(!_uiState.value.isFav) {
+                 flightRepository.insertFav(flight)
+                 Toast.makeText(context,"Successfully Added.",Toast.LENGTH_SHORT).show()
+             } else {
+                 flightRepository.deleteFav(flight)
+                 Toast.makeText(context,"Successfully Deleted From Favorites.",Toast.LENGTH_SHORT).show()
+             }
          }
     }
 

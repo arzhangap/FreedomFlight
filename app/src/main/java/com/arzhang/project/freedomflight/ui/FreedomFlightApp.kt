@@ -1,14 +1,15 @@
 package com.arzhang.project.freedomflight.ui
 
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -27,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,7 +47,7 @@ fun FreedomFlightApp(
 
     Scaffold { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            var open by remember{mutableStateOf(false)}
+            var open by remember { mutableStateOf(false) }
             val focusManager = LocalFocusManager.current
 
             Row(
@@ -64,42 +66,56 @@ fun FreedomFlightApp(
                         }
                 )
                 Spacer(Modifier.padding(5.dp))
-                SearchCard(uiState.query,
+                SearchCard(
+                    uiState.query,
                     onValueChange = {
-                        open = true
-                        viewModel.queryChange(it) },
+                        open = it.isNotBlank()
+                        viewModel.queryChange(it)
+                    },
                 )
             }
-            Box {
-               if(open) {
-                    Column(Modifier.padding(horizontal = 30.dp)) {
-                        Text("List of Airports:", style = MaterialTheme.typography.labelMedium)
-                        Card(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            SearchSuggestions(
-                                searchResult = searchSuggestion,
-                                onAirportClicked = {
-                                    viewModel.processAirportFlights(it)
-                                    open = false
-                                    focusManager.clearFocus()
-                                })
-                        }
-                    }
-                }
-                else {
-                    if(favFlights.isNotEmpty()) {
-                        FlightCardColumn(
-                            flightList = favFlights,
-                            onFavouriteClick = { viewModel.addFav(it) })
-                    } else {
-                        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
-                            Text("Favourite Flights is Empty.")
-                            Text("Search For Flights")
+
+                        AnimatedVisibility(visible = open) {
+                            Column(
+                                Modifier.padding(horizontal = 30.dp)) {
+                                Text(
+                                    "List of Airports:",
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth().heightIn(max = 350.dp)
+                                    ) {
+                                        SearchSuggestions(
+                                            searchResult = searchSuggestion,
+                                            onAirportClicked = {
+                                                viewModel.processAirportFlights(it)
+                                                open = false
+                                                focusManager.clearFocus()
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        AnimatedVisibility(!open) {
+                        if (favFlights.isNotEmpty()) {
+                                val context = LocalContext.current
+                                FlightCardColumn(
+                                    flightList = favFlights,
+                                    onFavouriteClick = { viewModel.addFav(it, context = context) },
+                                    isFav = uiState.isFav
+                                )
+                        } else {
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text("Favourite Flights is Empty.")
+                                Text("Search For Flights")
+                            }
                         }
                     }
                 }
             }
         }
-    }
-}
+

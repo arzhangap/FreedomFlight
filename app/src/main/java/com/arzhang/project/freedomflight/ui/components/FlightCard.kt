@@ -4,9 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -18,6 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,59 +29,58 @@ import com.arzhang.project.freedomflight.ui.FlightDetails
 
 @Composable
 fun FlightCard(
-                flight: FlightDetails,
-                onFavoriteClick: (FlightDetails) -> Unit
+            flight: FlightDetails,
+            onFavoriteClick: (FlightDetails) -> Unit,
+            isFav: Boolean
 ) {
-    Card() {
-        Box() {
+    Card {
+        Box {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(3.dp)
+                    .padding(10.dp)
             ) {
-                Text(flight.departureCode, fontSize = 12.sp)
-                Text(text = flight.departureName, fontSize = 8.sp)
-                Text("to", style = MaterialTheme.typography.labelSmall, fontSize = 12.sp)
-                Text(flight.destinationCode, fontSize = 12.sp)
-                Text(text = flight.destinationName, fontSize = 8.sp)
+                Text("DEPART", style = MaterialTheme.typography.labelLarge)
+                AirportRow(flight.departureCode,flight.departureName)
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text("ARRIVE", style = MaterialTheme.typography.labelLarge)
+                AirportRow(flight.destinationCode,flight.destinationName)
             }
-            Icon(imageVector = Icons.Default.Star, contentDescription = null,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(horizontal = 4.dp)
-                    .clickable { onFavoriteClick(flight) }
-            )
+                Icon(imageVector = Icons.Default.Star , contentDescription = null,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(horizontal = 8.dp)
+                        .size(35.dp)
+                        .clickable { onFavoriteClick(flight) },
+                    tint = if(isFav) Color(255, 229, 0, 255) else Color.Gray
+                )
         }
+    }
+}
+@Composable
+fun AirportRow(code:String, name:String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(code, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.padding(5.dp))
+        Text(text = name, style = MaterialTheme.typography.labelMedium)
     }
 }
 
 @Composable
-fun FlightCardColumn(flightList: List<FlightDetails>, onFavouriteClick: (FlightDetails) -> Unit) {
+fun FlightCardColumn(flightList: List<FlightDetails>, onFavouriteClick: (FlightDetails) -> Unit, isFav: Boolean =false) {
     LazyColumn(contentPadding = PaddingValues(10.dp)) {
         items(flightList) { flight ->
             Spacer(modifier = Modifier.padding(4.dp))
-            FlightCard(flight = flight, onFavoriteClick = {onFavouriteClick(it)})
+            FlightCard(flight = flight, onFavoriteClick = {onFavouriteClick(it)}, isFav = isFav)
         }
     }
 }
 
-@Preview(device = "spec:width=411dp,height=891dp")
+@Preview
 @Composable
-fun FlightCardColumnPreview() {
-//    FreedomFlightTheme {
-////        val dummyAirport1 =  Airport(1,"IRI","Iran, Karaj, 200", 200)
-////        val dummyAirport2 =  Airport(1,"HVN","Heaven", 2000)
-////        val dummyFlight = FlightDetails(id = 1,  = dummyAirport1, destinationAirport = dummyAirport2)
-////        val dummyList = listOf(dummyFlight, dummyFlight)
-//        FlightCardColumn(flightList = dummyList)
-//    }
+fun CardPreview() {
+    val flight= FlightDetails(0,"IRI","IRAN","FRR", "FREEDOM")
+    FlightCard(
+        flight, onFavoriteClick = {}, isFav = false
+    )
 }
-
-//@Preview(device = "spec:width=411dp,height=891dp", showBackground = true)
-//@Composable
-//fun FlightCardPreview() {
-//    FreedomFlightTheme {
-//        FlightCard(flightId = 1, departureAirport = Airport(1,"IRI","Iran, Karaj, 200", 200), destinationAirport = Airport(2,"HVN","Heaven", 200))
-//    }
-//}

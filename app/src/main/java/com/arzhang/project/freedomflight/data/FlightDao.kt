@@ -1,6 +1,7 @@
 package com.arzhang.project.freedomflight.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -33,6 +34,9 @@ interface FlightDao {
 
     @Insert(entity = UserFavoriteFlight::class, onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertFav(flights: UserFavoriteFlight)
+
+    @Delete(entity = UserFavoriteFlight::class)
+    suspend fun deleteFav(flight: UserFavoriteFlight)
 
     @Query(
         "SELECT f.id," +
